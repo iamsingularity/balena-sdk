@@ -121,13 +121,15 @@ exports.loginPaidUser = ->
 
 exports.givenMulticontainerApplication = ->
 	beforeEach ->
-		balena.models.application.create
-			name: 'FooBar'
-			applicationType: 'microservices-starter'
-			deviceType: 'raspberry-pi'
-		.then (application) =>
+		Promise.all([
+			balena.models.application.create
+				name: 'FooBar'
+				applicationType: 'microservices-starter'
+				deviceType: 'raspberry-pi'
+			balena.auth.getUserId()
+		])
+		.then ([application, userId]) =>
 			@application = application
-			userId = application.user.__id
 
 			Promise.all [
 				# Register web & DB services
