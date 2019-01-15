@@ -1,4 +1,5 @@
 m = require('mochainon')
+Promise = require('bluebird')
 _ = require('lodash')
 
 { balena, credentials, givenLoggedInUser, givenMulticontainerApplication } = require('../setup')
@@ -127,41 +128,41 @@ describe 'Release Model', ->
 		givenMulticontainerApplication()
 
 		beforeEach ->
-			application = @application
-			userId = @application.user.__id
+			balena.pine.get
+				resource: 'organization'
+				id: @application.organization.__id
+				options: $expand: 'is_owned_by__user'
+			.then (organization) =>
+				userId = organization.is_owned_by__user[0].id
 
-			balena.pine.post
-				resource: 'release'
-				body:
-					belongs_to__application: application.id
-					is_created_by__user: userId
-					commit: 'errored-then-fixed-release-commit'
-					status: 'error'
-					source: 'cloud'
-					composition: {}
-					start_timestamp: 64321
-			.then ->
-				balena.pine.post
-					resource: 'release'
-					body:
-						belongs_to__application: application.id
+				Promise.mapSeries [
+						belongs_to__application: @application.id
+						is_created_by__user: userId
+						commit: 'errored-then-fixed-release-commit'
+						status: 'error'
+						source: 'cloud'
+						composition: {}
+						start_timestamp: 64321
+					,
+						belongs_to__application: @application.id
 						is_created_by__user: userId
 						commit: 'errored-then-fixed-release-commit'
 						status: 'success'
 						source: 'cloud'
 						composition: {}
 						start_timestamp: 74321
-			.then ->
-				balena.pine.post
-					resource: 'release'
-					body:
-						belongs_to__application: application.id
+					,
+						belongs_to__application: @application.id
 						is_created_by__user: userId
 						commit: 'failed-release-commit'
 						status: 'failed'
 						source: 'cloud'
 						composition: {}
 						start_timestamp: 84321
+				], (body) ->
+					balena.pine.post
+						resource: 'release'
+						body: body
 
 		describe 'balena.models.release.getLatestByApplication()', ->
 
