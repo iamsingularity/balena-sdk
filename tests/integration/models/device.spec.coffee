@@ -975,7 +975,8 @@ describe 'Device Model', ->
 					m.chai.expect(_.find(result, { name: 'BALENA_A' }).value).equal('a')
 					m.chai.expect(_.find(result, { name: 'BALENA_B' }).value).equal('b')
 
-		describe 'balena.models.device.envVar', ->
+		# TODO: Remove this before merge
+		describe.skip 'balena.models.device.envVar', ->
 
 			envVarModel = balena.models.device.envVar
 
