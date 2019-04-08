@@ -131,9 +131,16 @@ describe 'Release Model', ->
 			balena.pine.get
 				resource: 'organization'
 				id: @application.organization.__id
-				options: $expand: 'is_owned_by__user'
+				options:
+					$expand:
+						user__is_member_of__organization:
+							$filter:
+								organization_membership_role:
+									$any:
+										$alias: 'omr'
+										$expr: omr: name: 'personal'
 			.then (organization) =>
-				userId = organization.is_owned_by__user[0].id
+				userId = organization.user__is_member_of__organization[0].user.__id
 
 				Promise.mapSeries [
 						belongs_to__application: @application.id
