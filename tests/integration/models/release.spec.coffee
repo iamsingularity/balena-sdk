@@ -133,14 +133,14 @@ describe 'Release Model', ->
 				id: @application.organization.__id
 				options:
 					$expand:
-						user__is_member_of__organization:
+						organization_membership:
 							$filter:
 								organization_membership_role:
 									$any:
 										$alias: 'omr'
 										$expr: omr: name: 'personal'
 			.then (organization) =>
-				userId = organization.user__is_member_of__organization[0].user.__id
+				userId = organization.organization_membership[0].user.__id
 
 				Promise.mapSeries [
 						belongs_to__application: @application.id
